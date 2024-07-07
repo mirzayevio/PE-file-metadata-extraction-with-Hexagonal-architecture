@@ -20,3 +20,10 @@ Base = declarative_base()
 
 engine = create_engine(DB_URI)
 Session = scoped_session(sessionmaker(bind=engine))
+
+
+# S3 related settings
+BUCKET_NAME = 's3-nord-challenge-data'
+CATALOGS = ['0/', '1/']
+
+DOWNLOAD_FOLDER = os.path.join(os.getcwd(), 'downloads')

@@ -1,5 +1,8 @@
 import argparse
 
+from src.adapters.services.storage import S3StorageService
+from src.configurator.config import BUCKET_NAME, CATALOGS, DOWNLOAD_FOLDER
+
 
 def main():
     parser = argparse.ArgumentParser(description='Process files based on task size.')
@@ -26,9 +29,11 @@ def main():
 
     print(f'Task size received: {args.task_size}')
 
-    # Now you can proceed with your application logic using `args.task_size`
-    # For example:
-    # process_files(args.task_size)
+    s3_client = S3StorageService(BUCKET_NAME, DOWNLOAD_FOLDER, CATALOGS)
+    task_size = args.task_size // 2
+
+    for catalog in CATALOGS:
+        print(s3_client.list_objects(catalog, task_size))
 
 
 if __name__ == '__main__':
