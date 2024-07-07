@@ -21,3 +21,8 @@ class Metadata:
     num_of_imports: str
     num_of_exports: str
     created: datetime
+
+    @staticmethod
+    def from_dict(data: dict) -> 'Metadata':
+        data['created'] = datetime.fromisoformat(data['created'])
+        return Metadata(**data)
