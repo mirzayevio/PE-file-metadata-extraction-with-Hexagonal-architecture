@@ -8,11 +8,11 @@ def main():
     parser.add_argument('task_size', nargs='?', help='Size of the task (integer value)')
     args = parser.parse_args()
 
-    def validate_task_size(task_size):
+    def validate_task_size(n):
         try:
-            return int(task_size)
+            return int(n)
         except ValueError:
-            print(f'Error: {task_size} is not a valid integer.')
+            print(f'Error: {n} is not a valid integer.')
             exit(1)
 
     if args.task_size is None:

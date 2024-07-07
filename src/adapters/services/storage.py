@@ -48,10 +48,15 @@ class S3StorageService(StorageServiceInterface):
 
         return [prefix.get('Prefix') for prefix in result.search('CommonPrefixes')]
 
-    def _download_file(self, key: str):
+    def download_file(self, key: str):
         file_name = key.split('/')[-1]
         local_file_path = os.path.join(self.download_folder, file_name)
         os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
         self.s3_client.download_file(self.bucket_name, key, local_file_path)
 
         print(f'Downloaded {file_name}')
+
+    def _download_files(self, count: int) -> None:
+        for catalog in self.catalogs:
+            for key in self.list_objects(catalog, count):
+                self.download_file(key)

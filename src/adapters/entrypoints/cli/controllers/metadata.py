@@ -12,6 +12,4 @@ class MetadataController:
         self.metadata_service = metadata_service
 
     def execute(self, task_size: int):
-        print(task_size)
-        print(self.storage_service)
-        print(self.metadata_service)
+        self.storage_service.download_files(task_size)

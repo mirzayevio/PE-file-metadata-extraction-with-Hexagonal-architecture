@@ -26,4 +26,8 @@ Session = scoped_session(sessionmaker(bind=engine))
 BUCKET_NAME = 's3-nord-challenge-data'
 CATALOGS = ['0/', '1/']
 
-DOWNLOAD_FOLDER = os.path.join(os.getcwd(), 'downloads')
+PROJECT_ROOT = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
+
+DOWNLOAD_FOLDER = os.path.join(PROJECT_ROOT, 'downloads')

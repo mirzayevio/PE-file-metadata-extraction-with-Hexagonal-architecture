@@ -6,9 +6,9 @@ class StorageServiceInterface(ABC):
     def __init__(self) -> None:
         raise NotImplementedError
 
-    def download_file(self, path: str) -> None:
-        return self._download_file(path)
+    def download_files(self, count: int) -> None:
+        return self._download_files(count)
 
     @abstractmethod
-    def _download_file(self, path: str) -> None:
+    def _download_files(self, count: int) -> None:
         raise NotImplementedError
