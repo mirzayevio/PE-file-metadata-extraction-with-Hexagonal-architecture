@@ -37,7 +37,7 @@ def test_metadata_create_with_valid_parameters():
 
 
 def test_metadata_with_valid_parameters(metadata_dict):
-    """Tests that a Metadata object keys"""
+    """Tests that a Metadata object key-values are valid"""
     metadata = Metadata.from_dict(metadata_dict)
 
     assert metadata.id == '123'
@@ -53,6 +53,7 @@ def test_metadata_with_valid_parameters(metadata_dict):
 
 
 def test_metadata_from_dict_invalid_date(metadata_dict):
+    """Tests that invalid date format will raise ValueError"""
     invalid_metadata_dict = metadata_dict.copy()
     invalid_metadata_dict['created'] = 'invalid-date-format'
 
@@ -61,8 +62,9 @@ def test_metadata_from_dict_invalid_date(metadata_dict):
 
 
 def test_metadata_from_dict_missing_fields(metadata_dict):
+    """Tests that missing argument will raise TypeError"""
     incomplete_metadata_dict = metadata_dict.copy()
-    incomplete_metadata_dict.pop('num_of_exports')  # Remove a required field
+    incomplete_metadata_dict.pop('num_of_exports')
 
     with pytest.raises(TypeError, match='missing 1 required positional argument'):
         Metadata.from_dict(incomplete_metadata_dict)
