@@ -1,12 +1,14 @@
 [tool.poetry]
 name = "nord-security-task"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "Nord Security home task"
+authors = ["Farid Mirzayev <faridmirzayev@gmail.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
+pydantic = "^2.8.2"
 
 
 [tool.poetry.group.dev.dependencies]
