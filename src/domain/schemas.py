@@ -1,7 +1,7 @@
 import datetime
-from uuid import uuid4
+from uuid import UUID, uuid4
 
-from pydantic import UUID4, BaseModel
+from pydantic import BaseModel
 from pydantic.class_validators import validator
 from pydantic.fields import Field
 
@@ -9,7 +9,7 @@ from src.domain.validators import FileExtensionValidator
 
 
 class CreateMetadataInputDto(BaseModel):
-    id: UUID4 = Field(default_factory=uuid4)
+    id: UUID = Field(default_factory=uuid4)
     file_name: str
     file_path: str
     file_type: str
@@ -28,5 +28,5 @@ class CreateMetadataInputDto(BaseModel):
         return v
 
 
-def create_post_factory(input_data: dict[str, str]) -> CreateMetadataInputDto:
+def create_metadata_factory(input_data: dict[str, str]) -> CreateMetadataInputDto:
     return CreateMetadataInputDto(**input_data)
