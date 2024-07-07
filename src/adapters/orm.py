@@ -3,7 +3,7 @@ from sqlalchemy import UUID, Column, DateTime, Integer, String
 from src.configurator.config import Base
 
 
-class Metadata(Base):
+class MetadataModel(Base):
     __tablename__ = 'metadata'
     id = Column(UUID, primary_key=True)
     file_name = Column(String(100), nullable=False)
