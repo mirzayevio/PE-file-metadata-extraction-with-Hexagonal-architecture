@@ -1,0 +1,82 @@
+version: '3'
+services:
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    networks:
+      - nord
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - nord
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: db
+      DB_PORT: 5432
+    env_file:
+      - .env
+    depends_on:
+      - db
+    stdin_open: true  # Keep stdin open to allow user input
+    tty: true         # Allocate a pseudo-TTY for interactive input
+    networks:
+      - nord
+
+#  spark-master:
+#    image: bitnami/spark:3
+#    container_name: spark-master
+#    ports:
+#      - "8080:8080"
+#      - "7077:7077"
+#    environment:
+#      - SPARK_MODE=master
+#    networks:
+#      - nord
+#
+#  spark-worker-1:
+#    image: bitnami/spark:3
+#    container_name: spark-worker-1
+#    environment:
+#      - SPARK_MODE=worker
+#      - SPARK_MASTER_HOST=spark-master
+#    depends_on:
+#      - spark-master
+#    networks:
+#      - nord
+#
+#  spark-worker-2:
+#    image: bitnami/spark:3
+#    container_name: spark-worker-2
+#    environment:
+#      - SPARK_MODE=worker
+#      - SPARK_MASTER_HOST=spark-master
+#    depends_on:
+#      - spark-master
+#    networks:
+#      - nord
+
+networks:
+  nord:
