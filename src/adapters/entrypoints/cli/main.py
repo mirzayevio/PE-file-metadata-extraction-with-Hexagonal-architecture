@@ -1,7 +1,6 @@
 import argparse
 
-from src.adapters.services.storage import S3StorageService
-from src.configurator.config import BUCKET_NAME, CATALOGS, DOWNLOAD_FOLDER
+from src.configurator.containers import container
 
 
 def main():
@@ -29,11 +28,11 @@ def main():
 
     print(f'Task size received: {args.task_size}')
 
-    s3_client = S3StorageService(BUCKET_NAME, DOWNLOAD_FOLDER, CATALOGS)
+    metadata_cli_controller = container.metadata_cli_controller()
+
     task_size = args.task_size // 2
 
-    for catalog in CATALOGS:
-        print(s3_client.list_objects(catalog, task_size))
+    metadata_cli_controller.execute(task_size)
 
 
 if __name__ == '__main__':
