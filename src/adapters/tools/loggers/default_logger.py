@@ -1,16 +1,21 @@
 import logging
+import os
 
+from src.configurator.config import LOGS_FOLDER
 from src.domain.ports.tools.loggers.logger import LoggerInterface
 
 
 class LoggerDefault(LoggerInterface):
     def __init__(self):
+        log_file_path = os.path.join(LOGS_FOLDER, 'app.log')
+        os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+
         logging.basicConfig(
-            filename='app.log',
+            filename=log_file_path,
             filemode='a',
             datefmt='%Y-%m-%d %H:%M:%S',
             format='%(asctime)-s - %(levelname)s - %(message)s',
-            level=logging.INFO,
+            level=logging.DEBUG,
         )
 
         console = logging.StreamHandler()

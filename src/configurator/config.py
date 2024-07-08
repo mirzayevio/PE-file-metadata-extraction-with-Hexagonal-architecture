@@ -1,5 +1,9 @@
 import os
 
+import boto3
+from botocore import UNSIGNED
+from botocore.client import BaseClient
+from botocore.config import Config
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
@@ -23,11 +27,15 @@ Session = scoped_session(sessionmaker(bind=engine))
 
 
 # S3 related settings
+S3_CLIENT: BaseClient = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+
 BUCKET_NAME = 's3-nord-challenge-data'
 CATALOGS = ['0/', '1/']
 
+# Folders setup
 PROJECT_ROOT = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 )
 
 DOWNLOAD_FOLDER = os.path.join(PROJECT_ROOT, 'downloads')
+LOGS_FOLDER = os.path.join(PROJECT_ROOT, 'logs')

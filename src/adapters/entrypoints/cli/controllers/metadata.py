@@ -16,4 +16,3 @@ class MetadataController:
 
     def execute(self, task_size: int):
         self.storage_service.download_files(task_size)
-        self.logger.log_debug('fdssdfsdfsdfsdsd')

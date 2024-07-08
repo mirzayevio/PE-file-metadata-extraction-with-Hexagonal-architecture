@@ -6,25 +6,29 @@ from src.adapters.services.metadata import MetadataService
 from src.adapters.services.storage import S3StorageService
 
 from ..adapters.tools.loggers.default_logger import LoggerDefault
-from .config import BUCKET_NAME, CATALOGS, DOWNLOAD_FOLDER, Session
+from .config import BUCKET_NAME, CATALOGS, DOWNLOAD_FOLDER, S3_CLIENT, Session
 
 
 class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
+
+    logger = providers.Singleton(LoggerDefault)
+
     storage_service = providers.Singleton(
         S3StorageService,
+        s3_client=S3_CLIENT,
+        logger=logger,
         bucket_name=config.bucket_name,
         download_folder=config.download_folder,
         catalogs=config.catalogs,
     )
+
     metadata_repository = providers.Singleton(
         MetadataRepository, session=config.session
     )
     metadata_service = providers.Factory(
         MetadataService, repository=metadata_repository
     )
-
-    logger = providers.Singleton(LoggerDefault)
 
     metadata_cli_controller = providers.Factory(
         MetadataController,
