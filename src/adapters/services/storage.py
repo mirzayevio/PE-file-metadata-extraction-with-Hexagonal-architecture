@@ -64,6 +64,8 @@ class S3StorageService(StorageServiceInterface):
         self.logger.log_info(f'Downloaded {file_name}')
 
     def _download_files(self, count: int) -> None:
+        generators = []
         for catalog in self.catalogs:
-            for key in self.list_objects(catalog, count):
-                self.download_file(key)
+            generators.append(self.list_objects(catalog, count))
+
+        print(generators)
