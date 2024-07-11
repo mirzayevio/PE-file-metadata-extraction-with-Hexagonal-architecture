@@ -1,9 +1,14 @@
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from time import perf_counter
+from typing import Generator, TypeVar
 
 from botocore.client import BaseClient
 
 from src.domain.ports.services.storage import StorageServiceInterface
 from src.domain.ports.tools.loggers.logger import LoggerInterface
+
+T = TypeVar('T')
 
 
 class S3StorageService(StorageServiceInterface):
@@ -63,9 +68,36 @@ class S3StorageService(StorageServiceInterface):
 
         self.logger.log_info(f'Downloaded {file_name}')
 
+    def _download_catalog_files(self, catalog: Generator[T, None, None]):
+        start = perf_counter()
+        count = 0
+        futures = []
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            # Download each file
+            for key in catalog:
+                if any(key.endswith(ext) for ext in ('exe', 'dll')):
+                    future = executor.submit(self.download_file, key)
+                    futures.append(future)
+                    count += 1
+                    if count == 2000:
+                        break
+
+        # Wait for all downloads to complete
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                print(f'Download failed: {e}')
+
+        end = perf_counter()
+
+        print(f'It took {end - start} to download {count} files')
+
     def _download_files(self, count: int) -> None:
         generators = []
         for catalog in self.catalogs:
             generators.append(self.list_objects(catalog, count))
 
-        print(generators)
+        for gen in generators:
+            self._download_catalog_files(gen)
