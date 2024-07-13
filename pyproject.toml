@@ -15,6 +15,9 @@ psycopg2-binary = "^2.9.9"
 dependency-injector = "^4.41.0"
 boto3 = "^1.34.140"
 botocore = "^1.34.140"
+pefile = "^2023.2.7"
+pex = "^2.10.0"
+pyspark = "3.3.1"
 
 
 [tool.poetry.group.dev.dependencies]

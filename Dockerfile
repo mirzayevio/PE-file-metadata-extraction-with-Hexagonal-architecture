@@ -1,20 +1,27 @@
 FROM python:3.11-slim
 
-RUN pip install poetry==1.4.2
+RUN apt-get update && \
+    apt-get install default-jdk curl zip -y \
+    && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock* /app/
-
-RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIRc
-
 COPY . /app
 
-RUN poetry install --without dev
+RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "main.py"]
+RUN mkdir -p /opt/spark/jars
+
+RUN zip -r /opt/spark/jars/src.zip src
+
+RUN curl -k -o /opt/spark/jars/postgresql-42.7.3.jar https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
+
+RUN pex --requirement requirements.txt --output-file /opt/spark/pex/app.pex
+
+RUN chmod +x /opt/spark/pex/app.pex
+
+ENV PYSPARK_PYTHON /opt/spark/pex/app.pex
+
+CMD ["python", "-m", "src.adapters.entrypoints.cli.main"]

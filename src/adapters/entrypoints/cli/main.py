@@ -3,7 +3,7 @@ import argparse
 from src.configurator.containers import container
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description='Process files based on task size.')
     parser.add_argument('task_size', nargs='?', help='Size of the task (integer value)')
     args = parser.parse_args()
@@ -30,9 +30,7 @@ def main():
 
     metadata_cli_controller = container.metadata_cli_controller()
 
-    task_size = args.task_size // 2
-
-    metadata_cli_controller.execute(task_size)
+    metadata_cli_controller.execute(args.task_size)
 
 
 if __name__ == '__main__':
