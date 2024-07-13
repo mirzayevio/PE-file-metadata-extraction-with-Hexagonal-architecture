@@ -1,0 +1,9 @@
+spark:
+  app_name: "Metadata"
+  master: "spark://spark-master:7077"
+  config:
+    "spark.files": "/opt/spark/pex/app.pex"
+    "spark.jars": "/opt/spark/jars/postgresql-42.7.3.jar"
+  py_files:
+    - "/opt/spark/jars/utils.zip"
+pyspark_python: "./opt/spark/pex/app.pex"

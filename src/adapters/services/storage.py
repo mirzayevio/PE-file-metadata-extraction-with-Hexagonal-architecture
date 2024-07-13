@@ -1,10 +1,10 @@
-import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from time import perf_counter
 from typing import Generator, TypeVar
 
 from botocore.client import BaseClient
 
+from src.configurator.config import ALLOWED_FILE_FORMATS
 from src.domain.ports.services.storage import StorageServiceInterface
 from src.domain.ports.tools.loggers.logger import LoggerInterface
 
@@ -17,16 +17,16 @@ class S3StorageService(StorageServiceInterface):
         s3_client: BaseClient,
         logger: LoggerInterface,
         bucket_name: str,
-        download_folder: str,
         catalogs: list[str],
     ):
         self.logger = logger
         self.s3_client = s3_client
         self.bucket_name = bucket_name
-        self.download_folder = download_folder
         self.catalogs = catalogs
 
-    def list_objects(self, prefix: str, max_objects: int = None):
+    def list_objects(
+        self, prefix: str, max_objects: int = None
+    ) -> Generator[T, None, None]:
         continuation_token = None
         objects_yielded = 0
         response = {}
@@ -60,44 +60,41 @@ class S3StorageService(StorageServiceInterface):
 
         return [prefix.get('Prefix') for prefix in result.search('CommonPrefixes')]
 
-    def download_file(self, key: str):
+    def download_file(self, key: str, local_file_path: str):
         file_name = key.split('/')[-1]
-        local_file_path = os.path.join(self.download_folder, file_name)
-        os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
         self.s3_client.download_file(self.bucket_name, key, local_file_path)
-
         self.logger.log_info(f'Downloaded {file_name}')
 
-    def _download_catalog_files(self, catalog: Generator[T, None, None]):
+    def _download_catalog_files(
+        self, catalog: Generator[T, None, None], download_folder: str
+    ):
         start = perf_counter()
-        count = 0
         futures = []
 
         with ThreadPoolExecutor(max_workers=10) as executor:
             # Download each file
             for key in catalog:
-                if any(key.endswith(ext) for ext in ('exe', 'dll')):
-                    future = executor.submit(self.download_file, key)
+                if any(key.endswith(ext) for ext in ALLOWED_FILE_FORMATS):
+                    future = executor.submit(self.download_file, key, download_folder)
                     futures.append(future)
-                    count += 1
-                    if count == 2000:
-                        break
 
         # Wait for all downloads to complete
         for future in as_completed(futures):
             try:
                 future.result()
             except Exception as e:
-                print(f'Download failed: {e}')
+                self.logger.log_info(f'Download failed: {e}')
 
         end = perf_counter()
 
-        print(f'It took {end - start} to download {count} files')
+        self.logger.log_info(
+            f'It took {end - start} seconds to download {len(futures)} files'
+        )
 
-    def _download_files(self, count: int) -> None:
+    def _download_files(self, count: int, download_folder: str) -> None:
         generators = []
         for catalog in self.catalogs:
             generators.append(self.list_objects(catalog, count))
 
         for gen in generators:
-            self._download_catalog_files(gen)
+            self._download_catalog_files(gen, download_folder)

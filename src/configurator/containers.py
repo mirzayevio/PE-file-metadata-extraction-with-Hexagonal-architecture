@@ -6,7 +6,7 @@ from src.adapters.services.metadata import MetadataService
 from src.adapters.services.storage import S3StorageService
 
 from ..adapters.tools.loggers.default_logger import LoggerDefault
-from .config import BUCKET_NAME, CATALOGS, DOWNLOAD_FOLDER, Session, get_s3_client
+from .config import BUCKET_NAME, CATALOGS, Session, get_s3_client
 
 
 class Container(containers.DeclarativeContainer):
@@ -20,7 +20,6 @@ class Container(containers.DeclarativeContainer):
         s3_client=s3_client,
         logger=logger,
         bucket_name=config.bucket_name,
-        download_folder=config.download_folder,
         catalogs=config.catalogs,
     )
 
@@ -41,6 +40,5 @@ class Container(containers.DeclarativeContainer):
 
 container = Container()
 container.config.bucket_name.from_value(BUCKET_NAME)
-container.config.download_folder.from_value(DOWNLOAD_FOLDER)
 container.config.catalogs.from_value(CATALOGS)
 container.config.session.from_value(Session)
