@@ -4,23 +4,20 @@
 
 help:
 	@echo "--------------- HELP ---------------"
-	@echo "To build and start Docker containers -> make all"
-	@echo "To build and start Docker containers in detached mode -> make docker-up"
-	@echo "To stop and remove Docker containers -> make docker-down"
+	@echo "To build and start Docker containers in detached mode -> make up"
+	@echo "To stop and remove Docker containers -> make down"
 	@echo "To run the application interactively using docker-compose -> make run"
 	@echo "To stop and remove Docker containers, images, volumes, and networks. -> make clean"
 	@echo "------------------------------------"
 
-# Default target
-all: docker-up
 
 # Build and bring up Docker containers
-docker-up:
+up:
 	@echo "Building and starting Docker containers..."
 	docker-compose up --build -d
 
 # Bring down Docker containers
-docker-down:
+down:
 	@echo "Stopping Docker containers..."
 	docker-compose down
 
