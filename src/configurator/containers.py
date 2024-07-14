@@ -5,8 +5,9 @@ from src.adapters.repositories.metadata import MetadataRepository
 from src.adapters.services.metadata import MetadataService
 from src.adapters.services.storage import S3StorageService
 
+from ..adapters.services.metadata_extraction import MetadataExtractionService
 from ..adapters.tools.loggers.default_logger import LoggerDefault
-from .config import BUCKET_NAME, CATALOGS, Session, get_s3_client
+from .config import BUCKET_NAME, CATALOGS, get_s3_client, get_spark_session
 
 
 class Container(containers.DeclarativeContainer):
@@ -14,6 +15,8 @@ class Container(containers.DeclarativeContainer):
 
     logger = providers.Singleton(LoggerDefault)
     s3_client = providers.Singleton(get_s3_client)
+    metadata_repository = providers.Singleton(MetadataRepository)
+    spark = providers.Singleton(get_spark_session)
 
     storage_service = providers.Singleton(
         S3StorageService,
@@ -23,17 +26,19 @@ class Container(containers.DeclarativeContainer):
         catalogs=config.catalogs,
     )
 
-    metadata_repository = providers.Singleton(
-        MetadataRepository, session=config.session
-    )
     metadata_service = providers.Factory(
         MetadataService, repository=metadata_repository
+    )
+
+    metadata_extraction_service = providers.Factory(
+        MetadataExtractionService, spark=spark
     )
 
     metadata_cli_controller = providers.Factory(
         MetadataController,
         logger=logger,
         storage_service=storage_service,
+        metadata_extraction_service=metadata_extraction_service,
         metadata_service=metadata_service,
     )
 
@@ -41,4 +46,3 @@ class Container(containers.DeclarativeContainer):
 container = Container()
 container.config.bucket_name.from_value(BUCKET_NAME)
 container.config.catalogs.from_value(CATALOGS)
-container.config.session.from_value(Session)

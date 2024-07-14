@@ -1,5 +1,7 @@
 import os
 from contextlib import contextmanager
+from enum import Enum
+from typing import Union
 
 import boto3
 import yaml
@@ -8,8 +10,6 @@ from botocore.client import BaseClient
 from botocore.config import Config
 from dotenv import load_dotenv
 from pyspark.sql import SparkSession
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
 
 load_dotenv()
 
@@ -19,21 +19,25 @@ DB_NAME = os.getenv('DB_NAME')
 DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
 
-DB_URI = f'postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
 
-Base = declarative_base()
-
-engine = create_engine(DB_URI)
-Session = scoped_session(sessionmaker(bind=engine))
-
-
-# S3 related settings
 def get_s3_client() -> BaseClient:
     return boto3.client('s3', config=Config(signature_version=UNSIGNED))
 
 
+def get_spark_session() -> SparkSession:
+    return spark_session(SPARK_CONFIG)
+
+
 @contextmanager
-def spark_session(config_path):
+def spark_session(config_path: Union[str, os.PathLike]):
+    if not (config_path.endswith('.yaml') or config_path.endswith('.yml')):
+        raise ValueError(
+            'The provided file is not a YAML file. Please provide a file with a .yaml or .yml extension.'
+        )
+
+    if not os.path.isfile(config_path):
+        raise FileNotFoundError(f'The file {config_path} does not exist.')
+
     with open(config_path, 'r') as config_file:
         config = yaml.safe_load(config_file)
 
@@ -58,8 +62,14 @@ def spark_session(config_path):
 
 
 BUCKET_NAME = 's3-nord-challenge-data'
-CATALOGS = ['0/']
+CATALOGS = ('0/',)
 ALLOWED_FILE_FORMATS = ('exe', 'dll')
+
+
+class Status(str, Enum):
+    SUCCESS = 'success'
+    FAIL = 'fail'
+
 
 # Folders setup
 PROJECT_ROOT = os.path.dirname(
@@ -68,3 +78,5 @@ PROJECT_ROOT = os.path.dirname(
 
 DOWNLOAD_FOLDER = os.path.join(PROJECT_ROOT, 'downloads')
 LOGS_FOLDER = os.path.join(PROJECT_ROOT, 'logs')
+SPARK_CONFIG = os.path.join(PROJECT_ROOT, 'spark_config.yaml')
+SPARK_FILES_FOLDER = '/opt/spark/data'
