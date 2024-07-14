@@ -1,6 +1,9 @@
+from src.configurator.config import ALLOWED_FILE_FORMATS
+
+
 class FileExtensionValidator:
-    valid_extensions: set[str] = {'exe', 'dll'}
+    valid_extensions = ALLOWED_FILE_FORMATS
 
     @classmethod
-    def update_valid_extensions(cls, extensions: set[str]):
+    def update_valid_extensions(cls, extensions):
         cls.valid_extensions = extensions

@@ -1,3 +1,4 @@
+import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from time import perf_counter
 from typing import Generator, TypeVar
@@ -17,7 +18,7 @@ class S3StorageService(StorageServiceInterface):
         s3_client: BaseClient,
         logger: LoggerInterface,
         bucket_name: str,
-        catalogs: list[str],
+        catalogs: list,
     ):
         self.logger = logger
         self.s3_client = s3_client
@@ -43,9 +44,9 @@ class S3StorageService(StorageServiceInterface):
 
             if 'Contents' in response:
                 for obj in response['Contents']:
-                    yield obj['Key']
-
-                    objects_yielded += 1
+                    if any(obj['Key'].endswith(ext) for ext in ALLOWED_FILE_FORMATS):
+                        yield obj['Key']
+                        objects_yielded += 1
                     if max_objects is not None and objects_yielded == max_objects:
                         return
 
@@ -54,16 +55,19 @@ class S3StorageService(StorageServiceInterface):
 
             continuation_token = response.get('NextContinuationToken')
 
-    def list_folders(self) -> list[str]:
+    def list_folders(self) -> list:
         paginator = self.s3_client.get_paginator('list_objects_v2')
         result = paginator.paginate(Bucket=self.bucket_name, Delimiter='/')
 
         return [prefix.get('Prefix') for prefix in result.search('CommonPrefixes')]
 
-    def download_file(self, key: str, local_file_path: str):
+    def download_file(self, key: str, local_folder_path: str):
         file_name = key.split('/')[-1]
+        local_file_path = os.path.join(local_folder_path, file_name)
+        os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
+
         self.s3_client.download_file(self.bucket_name, key, local_file_path)
-        self.logger.log_info(f'Downloaded {file_name}')
+        self.logger.log_info(f'Downloaded {local_file_path}')
 
     def _download_catalog_files(
         self, catalog: Generator[T, None, None], download_folder: str
@@ -72,13 +76,11 @@ class S3StorageService(StorageServiceInterface):
         futures = []
 
         with ThreadPoolExecutor(max_workers=10) as executor:
-            # Download each file
             for key in catalog:
                 if any(key.endswith(ext) for ext in ALLOWED_FILE_FORMATS):
                     future = executor.submit(self.download_file, key, download_folder)
                     futures.append(future)
 
-        # Wait for all downloads to complete
         for future in as_completed(futures):
             try:
                 future.result()

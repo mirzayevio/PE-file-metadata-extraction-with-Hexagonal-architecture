@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from pydantic.class_validators import validator
 from pydantic.fields import Field
 
+from src.configurator.config import Status
 from src.domain.validators import FileExtensionValidator
 
 
@@ -17,6 +18,8 @@ class CreateMetadataInputDto(BaseModel):
     architecture: str
     num_of_imports: str
     num_of_exports: str
+    status: Status
+    error: str
     created: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
     @validator('file_type')
@@ -28,5 +31,5 @@ class CreateMetadataInputDto(BaseModel):
         return v
 
 
-def create_metadata_factory(input_data: dict[str, str]) -> CreateMetadataInputDto:
+def create_metadata_factory(input_data: dict) -> CreateMetadataInputDto:
     return CreateMetadataInputDto(**input_data)
