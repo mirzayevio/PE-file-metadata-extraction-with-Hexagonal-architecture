@@ -1,5 +1,6 @@
 import argparse
 
+from src.configurator.config import CATALOGS
 from src.configurator.containers import container
 
 
@@ -10,9 +11,16 @@ def main() -> None:
 
     def validate_task_size(n):
         try:
-            return int(n)
-        except ValueError:
-            print(f'Error: {n} is not a valid integer.')
+            n = int(n)
+            if n <= 0:
+                raise ValueError('Number must be positive')
+            if n % len(CATALOGS) != 0:
+                raise ValueError(
+                    f'Warning: {n} is not divisible by 2. This may result in uneven distribution.'
+                )
+            return n
+        except ValueError as e:
+            print(f'Error: {n} is not a valid positive integer. {str(e)}')
             exit(1)
 
     if args.task_size is None:
@@ -28,9 +36,10 @@ def main() -> None:
 
     print(f'Task size received: {args.task_size}')
 
-    metadata_cli_controller = container.metadata_cli_controller()
+    task_size = args.task_size // len(CATALOGS)
 
-    metadata_cli_controller.execute(args.task_size)
+    metadata_cli_controller = container.metadata_cli_controller()
+    metadata_cli_controller.execute(task_size)
 
 
 if __name__ == '__main__':
