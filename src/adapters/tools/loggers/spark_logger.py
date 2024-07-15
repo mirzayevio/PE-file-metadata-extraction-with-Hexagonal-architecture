@@ -4,7 +4,7 @@ import os
 from src.domain.ports.tools.loggers.logger import LoggerInterface
 
 
-class LoggerDefault(LoggerInterface):
+class LoggerSpark(LoggerInterface):
     def __init__(self, folder_path: str):
         log_file_path = os.path.join(folder_path, 'app.log')
         os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
