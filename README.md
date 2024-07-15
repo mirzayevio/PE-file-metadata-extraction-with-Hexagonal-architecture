@@ -14,7 +14,9 @@ Before you begin, ensure you have met the following requirements:
 1. **Clone the repository**
     ```bash
     git clone https://github.com/mirzayevio/Nord-security-task.git
-    cd nord-security-task
+    ```
+    ```bash
+    cd Nord-security-task
     ```
 
 2. **Environment Variables**
@@ -69,8 +71,27 @@ Once the application is running, you can access the PostgreSQL database at:
 - User: `your_username`
 - Password: `your_password`
 
-### Example Queries
 
-You can run queries on the `metadata` table to retrieve extracted metadata:
-```sql
-SELECT * FROM metadata;
+### Database UI
+
+You can access the PostgreSQL Database UI using:
+- URL: `http://localhost:9090`
+
+### Spark UI
+
+After running the application, you can monitor Spark jobs using the Spark UI:
+- URL: `http://localhost:8080`
+
+
+### References
+
+- [https://github.com/erocarrera/pefile](https://github.com/erocarrera/pefile)
+- [https://wiki.osdev.org/MZ](https://wiki.osdev.org/MZ)
+- https://medium.com/@shreyash_tambe/mastering-malware-analysis-305b1c5efc27
+- [https://medium.com/@suffyan.asad1/spark-essentials-a-guide-to-setting-up-packaging-and-running-pyspark-projects](https://medium.com/@suffyan.asad1/spark-essentials-a-guide-to-setting-up-packaging-and-running-pyspark-projects-2eb2a27523a3)
+- [https://spark.apache.org/docs/latest/api/python/user_guide/python_packaging.html](https://spark.apache.org/docs/latest/api/python/user_guide/python_packaging.html)
+- [https://dev.to/mvillarrealb/creating-a-spark-standalone-cluster-with-docker-and-docker-compose-2021-update-6l4](https://dev.to/mvillarrealb/creating-a-spark-standalone-cluster-with-docker-and-docker-compose-2021-update-6l4)
+- [https://github.com/mvillarrealb/docker-spark-cluster](https://github.com/mvillarrealb/docker-spark-cluster)
+- [https://stackoverflow.com/questions/36461054/i-cant-seem-to-get-py-files-on-spark-to-work](https://stackoverflow.com/questions/36461054/i-cant-seem-to-get-py-files-on-spark-to-work)
+- [https://medium.com/@MarinAgli1/setting-up-a-spark-standalone-cluster-on-docker-in-layman-terms-8cbdc9fdd14b](https://medium.com/@MarinAgli1/setting-up-a-spark-standalone-cluster-on-docker-in-layman-terms-8cbdc9fdd14b)
+- [https://medium.com/@suffyan.asad1/writing-to-databases-using-jdbc-in-apache-spark-9a0eb2ce1a](https://medium.com/@suffyan.asad1/writing-to-databases-using-jdbc-in-apache-spark-9a0eb2ce1a)
