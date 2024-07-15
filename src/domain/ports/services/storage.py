@@ -12,3 +12,10 @@ class StorageServiceInterface(ABC):
     @abstractmethod
     def _download_files(self, count: int, download_folder: str) -> None:
         raise NotImplementedError
+
+    def download_files_with_spark(self, count: int, download_folder: str) -> None:
+        return self._download_files_with_spark(count, download_folder)
+
+    @abstractmethod
+    def _download_files_with_spark(self, count: int, download_folder: str) -> None:
+        raise NotImplementedError

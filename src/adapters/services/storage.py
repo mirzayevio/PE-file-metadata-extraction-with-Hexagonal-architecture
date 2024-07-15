@@ -3,9 +3,18 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from time import perf_counter
 from typing import Generator, TypeVar
 
+import botocore.exceptions
 from botocore.client import BaseClient
+from pyspark.sql import SparkSession
 
-from src.configurator.config import ALLOWED_FILE_FORMATS
+from src.configurator.config import (
+    ALLOWED_FILE_FORMATS,
+    MULTITHREADING_WORKER_SIZE,
+)
+from src.domain.ports.services.exceptions import (
+    DownloadFileFromS3Error,
+    ListingObjectsFromS3Error,
+)
 from src.domain.ports.services.storage import StorageServiceInterface
 from src.domain.ports.tools.loggers.logger import LoggerInterface
 
@@ -17,17 +26,26 @@ class S3StorageService(StorageServiceInterface):
         self,
         s3_client: BaseClient,
         logger: LoggerInterface,
+        spark: SparkSession,
         bucket_name: str,
         catalogs: list,
     ):
-        self.logger = logger
         self.s3_client = s3_client
+        self.logger = logger
+        self.spark = spark
         self.bucket_name = bucket_name
         self.catalogs = catalogs
 
     def list_objects(
         self, prefix: str, max_objects: int = None
     ) -> Generator[T, None, None]:
+        """
+        Lists objects in an S3 bucket with a specified prefix (catalog).
+
+        :param prefix: The prefix of the object keys to list.
+        :param max_objects: Maximum number of objects to list. Defaults to None.
+        :yields: Generator[T, None, None]: Yields object keys that match the prefix and allowed file formats.
+        """
         continuation_token = None
         objects_yielded = 0
         response = {}
@@ -39,8 +57,10 @@ class S3StorageService(StorageServiceInterface):
 
             try:
                 response = self.s3_client.list_objects_v2(**params)
-            except Exception as e:
-                self.logger.log_exception(f'list_objects: {e}')
+            except ListingObjectsFromS3Error as e:
+                self.logger.log_exception(
+                    f'Error listing objects with prefix {prefix}: {e}'
+                )
 
             if 'Contents' in response:
                 for obj in response['Contents']:
@@ -56,26 +76,57 @@ class S3StorageService(StorageServiceInterface):
             continuation_token = response.get('NextContinuationToken')
 
     def list_folders(self) -> list:
+        """
+        Lists catalog names from s3 bucket
+
+        :return: list of catalog names
+        """
         paginator = self.s3_client.get_paginator('list_objects_v2')
         result = paginator.paginate(Bucket=self.bucket_name, Delimiter='/')
 
         return [prefix.get('Prefix') for prefix in result.search('CommonPrefixes')]
 
     def download_file(self, key: str, local_folder_path: str):
-        file_name = key.split('/')[-1]
-        local_file_path = os.path.join(local_folder_path, file_name)
-        os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
+        """
+        Downloads a file from S3 to a local folder.
 
-        self.s3_client.download_file(self.bucket_name, key, local_file_path)
-        self.logger.log_info(f'Downloaded {local_file_path}')
+        :param key: key in s3 bucket
+        :param local_folder_path:
+        :return:
+        """
+        try:
+            file_name = key.split('/')[-1]
+            local_file_path = os.path.join(local_folder_path, file_name)
+
+            if os.path.exists(local_file_path):
+                self.logger.log_info(
+                    f'Skipping download. File {file_name} already exists in {local_folder_path}'
+                )
+                return
+
+            os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
+
+            self.s3_client.download_file(self.bucket_name, key, local_file_path)
+            self.logger.log_info(f'Downloaded {file_name} to {local_folder_path}')
+
+        except botocore.exceptions.ClientError as e:
+            self.logger.log_exception(f'Failed to download {key} from S3: {e}')
+        except DownloadFileFromS3Error as e:
+            self.logger.log_exception(f'Unexpected error during download of {key}: {e}')
 
     def _download_catalog_files(
         self, catalog: Generator[T, None, None], download_folder: str
     ):
+        """
+        Downloads files from a given catalog if their extensions are in the allowed formats.
+
+        :param catalog: (Generator[T, None, None]): A generator yielding file keys to be downloaded.
+        :param download_folder: The folder where the downloaded files will be saved.
+        """
         start = perf_counter()
         futures = []
 
-        with ThreadPoolExecutor(max_workers=10) as executor:
+        with ThreadPoolExecutor(max_workers=MULTITHREADING_WORKER_SIZE) as executor:
             for key in catalog:
                 if any(key.endswith(ext) for ext in ALLOWED_FILE_FORMATS):
                     future = executor.submit(self.download_file, key, download_folder)
@@ -94,9 +145,45 @@ class S3StorageService(StorageServiceInterface):
         )
 
     def _download_files(self, count: int, download_folder: str) -> None:
-        generators = []
-        for catalog in self.catalogs:
-            generators.append(self.list_objects(catalog, count))
+        """
+        Initiates the download of files from multiple catalogs.
+        Uses the _download_catalog_files method to handle the download for each catalog.
 
-        for gen in generators:
-            self._download_catalog_files(gen, download_folder)
+        :param count: The number of files to list from each catalog.
+        :param download_folder: The folder where the downloaded files will be saved.
+        """
+        start = perf_counter()
+        total_files = 0
+
+        try:
+            for catalog in self.catalogs:
+                generator = self.list_objects(catalog, count)
+                self._download_catalog_files(generator, download_folder)
+                total_files += count
+        except Exception as e:
+            self.logger.log_exception(f'Error downloading files: {e}')
+        finally:
+            end = perf_counter()
+            self.logger.log_info(
+                f'Download completed in {end - start:.2f} seconds. '
+                f'Total files downloaded: {total_files}'
+            )
+
+    def _download_files_with_spark(self, count: int, download_folder: str):
+        for catalog in self.catalogs:
+            generator = self.list_objects(catalog, count)
+            self.worker_handler(generator, download_folder)
+
+    def worker_handler(self, key_gen, download_folder):
+        with self.spark as spark:
+            sc = spark.sparkContext
+            download_folder_bc = sc.broadcast(download_folder)
+
+            file_keys_rdd = sc.parallelize(key_gen)
+
+            def download_file_worker(key_arg):
+                self.download_file(
+                    key=key_arg, local_folder_path=download_folder_bc.value
+                )
+
+            file_keys_rdd.foreach(download_file_worker)
