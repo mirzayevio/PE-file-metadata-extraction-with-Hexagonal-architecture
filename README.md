@@ -1,6 +1,7 @@
 # PE File Metadata Extractor
 
-This project downloads PE (Portable Executable) files from an S3 bucket, extracts metadata from the files, and stores the metadata in a PostgreSQL database using PySpark. The project is containerized using Docker.
+This project downloads PE (Portable Executable) files from an S3 bucket (using multithreading), extracts metadata from the files, and stores the metadata in a PostgreSQL database using PySpark. The project is containerized using Docker.
+> **Notice:** Due to some Spark configuration issues, Spark implemented only the metadata extraction and database storing parts.
 
 ## Prerequisites
 
