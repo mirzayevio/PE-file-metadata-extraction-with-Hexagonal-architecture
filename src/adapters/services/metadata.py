@@ -1,18 +1,19 @@
 from abc import ABC
 
-from src.domain.entities.metadata import Metadata
 from src.domain.ports.repositories.metadata import MetadataRepositoryInterface
 from src.domain.ports.services.metadata import MetadataServiceInterface
-from src.domain.schemas import CreateMetadataInputDto
+from src.domain.ports.tools.loggers.logger import LoggerInterface
 
 
 class MetadataService(MetadataServiceInterface, ABC):
-    def __init__(self, repository: MetadataRepositoryInterface) -> None:
+    def __init__(
+        self, logger: LoggerInterface, repository: MetadataRepositoryInterface
+    ) -> None:
+        self.logger = logger
         self.repository = repository
 
-    def _create(self, metadata: CreateMetadataInputDto):
-        metadata_dict = metadata.model_dump()
-        self.repository.add(Metadata.from_dict(metadata_dict))
+    def _create(self, metadata_df):
+        self.repository.add(metadata_df)
 
-    def _get_metadata_by_uuid(self, uuid: str) -> Metadata:
+    def _get_metadata_by_uuid(self, uuid: str):
         pass

@@ -4,6 +4,13 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel
 from pydantic.class_validators import validator
 from pydantic.fields import Field
+from pyspark.sql.types import (
+    FloatType,
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
+)
 
 from src.configurator.config import Status
 from src.domain.validators import FileExtensionValidator
@@ -33,3 +40,17 @@ class CreateMetadataInputDto(BaseModel):
 
 def create_metadata_factory(input_data: dict) -> CreateMetadataInputDto:
     return CreateMetadataInputDto(**input_data)
+
+
+metadata_spark_schema = StructType(
+    [
+        StructField('file_path', StringType(), True),
+        StructField('file_type', StringType(), True),
+        StructField('file_size', FloatType(), True),
+        StructField('architecture', StringType(), True),
+        StructField('num_of_imports', IntegerType(), True),
+        StructField('num_of_exports', IntegerType(), True),
+        StructField('status', StringType(), True),
+        StructField('error', StringType(), True),
+    ]
+)
