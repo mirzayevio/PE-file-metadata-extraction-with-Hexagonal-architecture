@@ -20,6 +20,16 @@ DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
 
 
+postgresql_jdbc_url = f'jdbc:postgresql://{DB_HOST}:{DB_PORT}/{DB_NAME}'
+
+postgresql_connection_properties = {
+    'user': DB_USER,
+    'password': DB_PASS,
+    'table': 'metadata',
+    'driver': 'org.postgresql.Driver',
+}
+
+
 def get_s3_client() -> BaseClient:
     return boto3.client('s3', config=Config(signature_version=UNSIGNED))
 
@@ -58,7 +68,7 @@ def spark_session(config_path: Union[str, os.PathLike]):
     try:
         yield spark
     finally:
-        spark.stop()
+        pass
 
 
 BUCKET_NAME = 's3-nord-challenge-data'
@@ -71,6 +81,8 @@ class Status(str, Enum):
     FAIL = 'fail'
 
 
+MULTITHREADING_WORKER_SIZE = 10
+
 # Folders setup
 PROJECT_ROOT = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -80,3 +92,4 @@ DOWNLOAD_FOLDER = os.path.join(PROJECT_ROOT, 'downloads')
 LOGS_FOLDER = os.path.join(PROJECT_ROOT, 'logs')
 SPARK_CONFIG = os.path.join(PROJECT_ROOT, 'spark_config.yaml')
 SPARK_FILES_FOLDER = '/opt/spark/data'
+SPARK_LOGS = '/opt/spark/logs'
