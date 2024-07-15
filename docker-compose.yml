@@ -1,4 +1,3 @@
-version: '3'
 services:
   db:
     image: postgres:13
@@ -12,8 +11,6 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "5432:5432"
     networks:
       - nord
 
@@ -58,7 +55,6 @@ services:
     user: root
     ports:
       - "8080:8080"
-      - "7077:7077"
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
