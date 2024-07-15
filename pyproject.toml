@@ -49,6 +49,7 @@ select = [
 ignore = [
     "C901",  # max-complexity-10
     "E501",  # line-too-long
+    "E902"   # stream did not contain valid UTF-8
 ]
 
 [tool.ruff.format]
