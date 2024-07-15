@@ -7,6 +7,7 @@ help:
 	@echo "To build and start Docker containers in detached mode -> make up"
 	@echo "To stop and remove Docker containers -> make down"
 	@echo "To run the application interactively using docker-compose -> make run"
+	@echo "To run the unit tests -> make test"
 	@echo "To stop and remove Docker containers, images, volumes, and networks. -> make clean"
 	@echo "------------------------------------"
 
@@ -25,6 +26,11 @@ down:
 run:
 	@echo "Running application..."
 	docker-compose run app
+
+# Run tests
+test:
+	@echo "Running application..."
+	docker-compose exec app pytest
 
 # Clean up Docker images/containers
 clean:

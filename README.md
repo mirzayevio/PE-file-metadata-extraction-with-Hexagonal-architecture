@@ -51,11 +51,15 @@ You can use the provided Makefile to manage Docker containers:
     make run
     ```
 
+- **Run unit tests**
+    ```bash
+    make test
+    ```
+
 - **Stop and remove the containers**
     ```bash
     make down
     ```
-
 
 - **Clean up Docker images/containers**
     ```bash
