@@ -1,4 +1,3 @@
-from abc import ABC
 from time import perf_counter
 
 from pyspark.sql import SparkSession
@@ -12,7 +11,7 @@ from src.domain.ports.services.exceptions import MetadataPersistenceError
 from src.domain.ports.tools.loggers.logger import LoggerInterface
 
 
-class MetadataRepository(MetadataRepositoryInterface, ABC):
+class MetadataRepository(MetadataRepositoryInterface):
     """Postgresql Repository for Metadata"""
 
     def __init__(self, logger: LoggerInterface, spark: SparkSession) -> None:

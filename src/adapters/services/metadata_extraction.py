@@ -1,5 +1,4 @@
 import os
-from abc import ABC
 from time import perf_counter
 
 from pyspark.sql import SparkSession
@@ -15,7 +14,7 @@ from src.domain.ports.tools.loggers.logger import LoggerInterface
 from src.domain.schemas import metadata_spark_schema
 
 
-class MetadataExtractionService(MetadataExtractionServiceInterface, ABC):
+class MetadataExtractionService(MetadataExtractionServiceInterface):
     def __init__(self, logger: LoggerInterface, spark: SparkSession) -> None:
         self.logger = logger
         self.spark = spark

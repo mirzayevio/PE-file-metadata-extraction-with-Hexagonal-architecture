@@ -1,11 +1,9 @@
-from abc import ABC
-
 from src.domain.ports.repositories.metadata import MetadataRepositoryInterface
 from src.domain.ports.services.metadata import MetadataServiceInterface
 from src.domain.ports.tools.loggers.logger import LoggerInterface
 
 
-class MetadataService(MetadataServiceInterface, ABC):
+class MetadataService(MetadataServiceInterface):
     def __init__(
         self, logger: LoggerInterface, repository: MetadataRepositoryInterface
     ) -> None:
