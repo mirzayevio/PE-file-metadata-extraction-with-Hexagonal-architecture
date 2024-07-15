@@ -17,13 +17,13 @@ def get_metadata(file_path: str):
     """
     result = {
         'file_path': file_path,
-        'file_type': '',
+        'file_type': None,
         'file_size': 0.0,
-        'architecture': '',
+        'architecture': None,
         'num_of_imports': 0,
         'num_of_exports': 0,
         'status': Status.FAIL.value,
-        'error': '',
+        'error': None,
     }
     if not os.path.isfile(file_path):
         logger.log_error(f'The file {file_path} does not exist.')
