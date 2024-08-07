@@ -31,7 +31,7 @@ Before you begin, ensure you have met the following requirements:
     ```
     DB_USER="your_username"
     DB_PASSWORD="your_password"
-    DB_NAME="nord"
+    DB_NAME="metadata"
     DB_HOST="db"
     DB_PORT="5432"
     ```
@@ -72,7 +72,7 @@ You can use the provided Makefile to manage Docker containers:
 Once the application is running, you can access the PostgreSQL database at:
 - Host: `db`
 - Port: `5432`
-- Database: `nord`
+- Database: `metadata`
 - User: `your_username`
 - Password: `your_password`
 
