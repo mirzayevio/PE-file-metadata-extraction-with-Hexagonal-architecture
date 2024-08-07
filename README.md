@@ -14,10 +14,10 @@ Before you begin, ensure you have met the following requirements:
 
 1. **Clone the repository**
     ```bash
-    git clone https://github.com/mirzayevio/Nord-security-task.git
+    git clone https://github.com/mirzayevio/PE-file-metadata-extraction.git
     ```
     ```bash
-    cd Nord-security-task
+    cd PE-file-metadata-extraction
     ```
 
 2. **Environment Variables**
