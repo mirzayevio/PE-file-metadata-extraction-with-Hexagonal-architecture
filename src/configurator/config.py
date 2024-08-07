@@ -71,8 +71,8 @@ def spark_session(config_path: Union[str, os.PathLike]):
         pass
 
 
-BUCKET_NAME = 's3-nord-challenge-data'
-CATALOGS = ('0/', '1/')
+BUCKET_NAME = '***'
+CATALOGS = ('***', '***')
 ALLOWED_FILE_FORMATS = ('exe', 'dll')
 
 
