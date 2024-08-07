@@ -12,7 +12,7 @@ services:
       - db_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - nord
+      - metadata
 
   adminer:
     image: adminer
@@ -22,7 +22,7 @@ services:
     depends_on:
       - db
     networks:
-      - nord
+      - metadata
 
   app:
     build:
@@ -47,7 +47,7 @@ services:
       - spark-worker-1
       - spark-worker-2
     networks:
-      - nord
+      - metadata
 
   spark-master:
     image: bitnami/spark:3.3.1
@@ -66,7 +66,7 @@ services:
       - ./downloads:/opt/spark/data
       - ./logs:/opt/spark/logs
     networks:
-      - nord
+      - metadata
 
   spark-worker-1:
     image: bitnami/spark:3.3.1
@@ -84,7 +84,7 @@ services:
     depends_on:
       - spark-master
     networks:
-      - nord
+      - metadata
 
   spark-worker-2:
     image: bitnami/spark:3.3.1
@@ -102,10 +102,10 @@ services:
     depends_on:
       - spark-master
     networks:
-      - nord
+      - metadata
 
 networks:
-  nord:
+  metadata:
 
 volumes:
   db_data:
